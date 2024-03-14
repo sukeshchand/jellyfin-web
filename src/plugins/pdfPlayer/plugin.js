@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import ServerConnections from '../../components/ServerConnections';
 import loading from '../../components/loading/loading';
 import keyboardnavigation from '../../scripts/keyboardNavigation';
@@ -16,6 +17,12 @@ export class PdfPlayer {
         this.type = PluginType.MediaPlayer;
         this.id = 'pdfplayer';
         this.priority = 1;
+
+        this.zoomScaleCurrent = 1;
+        this.zoomScaleFactor = 0.1;
+
+        this.onZoomIn = this.onZoomIn.bind(this);
+        this.onZoomOut = this.onZoomOut.bind(this);
 
         this.onDialogClosed = this.onDialogClosed.bind(this);
         this.onWindowKeyUp = this.onWindowKeyUp.bind(this);
@@ -122,11 +129,25 @@ export class PdfPlayer {
         this.stop();
     }
 
+    onZoomIn() {
+        const canvas = document.getElementById('canvas');
+        this.zoomScaleCurrent += this.zoomScaleFactor;
+        canvas.style.transform = 'scale(' + this.zoomScaleCurrent + ')';
+    }
+
+    onZoomOut() {
+        const canvas = document.getElementById('canvas');
+        this.zoomScaleCurrent -= this.zoomScaleFactor;
+        canvas.style.transform = 'scale(' + this.zoomScaleCurrent + ')';
+    }
+
     bindMediaElementEvents() {
         const elem = this.mediaElement;
 
         elem.addEventListener('close', this.onDialogClosed, { once: true });
         elem.querySelector('.btnExit').addEventListener('click', this.onDialogClosed, { once: true });
+        elem.querySelector('.btnZoomIn').addEventListener('click', this.onZoomIn);
+        elem.querySelector('.btnZoomOut').addEventListener('click', this.onZoomOut);
     }
 
     bindEvents() {
@@ -141,6 +162,8 @@ export class PdfPlayer {
 
         elem.removeEventListener('close', this.onDialogClosed);
         elem.querySelector('.btnExit').removeEventListener('click', this.onDialogClosed);
+        elem.querySelector('.btnZoomIn').removeEventListener('click', this.onZoomIn);
+        elem.querySelector('.btnZoomOut').removeEventListener('click', this.onZoomOut);
     }
 
     unbindEvents() {
@@ -173,6 +196,8 @@ export class PdfPlayer {
             html += '<canvas id="canvas"></canvas>';
             html += '<div class="actionButtons">';
             html += '<button is="paper-icon-button-light" class="autoSize btnExit" tabindex="-1"><span class="material-icons actionButtonIcon close" aria-hidden="true"></span></button>';
+            html += '<button is="paper-icon-button-light" class="autoSize btnZoomIn" tabindex="-1"><span class="material-icons actionButtonIcon close" aria-hidden="true"></span></button>';
+            html += '<button is="paper-icon-button-light" class="autoSize btnZoomOut" tabindex="-1"><span class="material-icons actionButtonIcon close" aria-hidden="true"></span></button>';
             html += '</div>';
 
             elem.id = 'pdfPlayer';
